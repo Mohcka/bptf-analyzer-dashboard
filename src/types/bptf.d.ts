@@ -172,7 +172,7 @@ interface User {
   /** Impersonation flag status */
   flagImpersonated: null | boolean;
   /** Array of active bans */
-  bans: any[];
+  bans: (string | number)[];
 }
 
 /** Complete listing details */

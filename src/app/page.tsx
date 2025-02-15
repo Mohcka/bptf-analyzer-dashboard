@@ -1,11 +1,21 @@
-"use server";
-
 import { db } from "@/db";
-import { listingEventsTable, listingsTable } from "@/db/schema";
+import { listingsTable } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import Image from "next/image";
 
+async function getLatestListings() {
+  "use server"
+  return await db
+    .select()
+    .from(listingsTable)
+    .orderBy(desc(listingsTable.listedAt))
+    .limit(10)
+    .execute();
+}
+
 export default async function Home() {
+  const listings = await getLatestListings();
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
@@ -53,7 +63,7 @@ export default async function Home() {
             Read our docs
           </a>
         </div>
-        {(await db.select().from(listingsTable).orderBy(desc(listingsTable.listedAt)).limit(10).execute()).map((l, i) => (
+        {listings.map((l, i) => (
           <h3 key={i} className="text-lg sm:text-xl">
             New! 💥 listing from {l.username} -- {l.details}
             <img src={l.userAvatar} alt={l.username} height={128} width={128} />
@@ -110,3 +120,5 @@ export default async function Home() {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic'
