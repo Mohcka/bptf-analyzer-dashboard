@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.66.9",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.1",
     "env-cmd": "^10.1.0",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tanstack/eslint-plugin-query": "^5.66.1",
     "@types/node": "^20",
     "@types/pg": "^8.11.11",
     "@types/react": "^19",
