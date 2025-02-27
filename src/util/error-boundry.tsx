@@ -1,19 +1,19 @@
 import React, { Component } from 'react'
 
 export class ErrorBoundry extends Component {
-  constructor(props: any) {
-    super(props)
+  // constructor(props: {}) {
+  //   super(props)
 
-    this.state = {
-      hasError: false
-    }
-  }
+  //   this.state = {
+  //     hasError: false
+  //   }
+  // }
 
-  static getDerivedStateFromError(error: any) {
-    return { hasError: true }
-  }
+  // static getDerivedStateFromError(error: {}) {
+  //   return { hasError: true }
+  // }
 
-  state = { hasError: false }
+  // state = { hasError: false }
 
   render() {
     return (
