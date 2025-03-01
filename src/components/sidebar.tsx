@@ -1,50 +1,127 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { ChartLine, Home, ListFilter, Settings } from "lucide-react"
-import { ThemeToggle } from "./theme-toggle"
+import { useState, useEffect } from "react";
+import { Menu, X, Home, TrendingUp, BarChart3, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-const sidebarLinks = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Trends", href: "/trends", icon: ChartLine },
-  { name: "Items", href: "/items", icon: ListFilter },
-  { name: "Settings", href: "/settings", icon: Settings },
-]
+// Sidebar menu items
+const menuItems = [
+  { name: "Home", icon: Home, href: "/" },
+  { name: "Trending", icon: TrendingUp, href: "/trending" },
+  { name: "Stats", icon: BarChart3, href: "/stats" },
+  { name: "Settings", icon: Settings, href: "/settings" },
+];
 
 export function Sidebar() {
-  const pathname = usePathname()
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Close sidebar when window is resized to larger size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsOpen(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const sidebar = document.getElementById('mobile-sidebar');
+      const toggleButton = document.getElementById('sidebar-toggle');
+      
+      if (isOpen && 
+          sidebar && 
+          !sidebar.contains(event.target as Node) && 
+          toggleButton && 
+          !toggleButton.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   return (
-    <div className="h-screen border-r flex flex-col bg-background">
-      <div className="p-4 border-b">
-        <h1 className="text-xl font-bold">BPTF Analyzer</h1>
+    <>
+      {/* Mobile toggle button */}
+      <Button
+        id="sidebar-toggle"
+        variant="ghost"
+        size="icon"
+        className="md:hidden fixed top-4 left-4 z-30"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? <X size={20} /> : <Menu size={20} />}
+      </Button>
+
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/50 z-20 md:hidden" onClick={() => setIsOpen(false)} />
+      )}
+
+      {/* Sidebar for mobile (slide in) */}
+      <div
+        id="mobile-sidebar"
+        className={cn(
+          "fixed top-0 left-0 h-full z-30 bg-background border-r transition-transform w-64 shadow-lg md:hidden",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold">BPTF Analyzer</h1>
+            <ThemeToggle />
+          </div>
+          <nav className="mt-8">
+            <ul className="space-y-2">
+              {menuItems.map((item) => (
+                <li key={item.name}>
+                  <a 
+                    href={item.href} 
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent text-foreground"
+                  >
+                    <item.icon size={18} />
+                    <span>{item.name}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
-      <div className="flex-1 overflow-auto py-4">
-        <nav className="grid gap-2 px-2">
-          {sidebarLinks.map((link) => {
-            const LinkIcon = link.icon
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                  pathname === link.href ? "bg-accent text-accent-foreground" : "transparent"
-                )}
-              >
-                <LinkIcon className="h-4 w-4" />
-                <span>{link.name}</span>
-              </Link>
-            )
-          })}
-        </nav>
+
+      {/* Desktop sidebar (always visible) */}
+      <div className="hidden md:block w-full h-full bg-background border-r">
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold">BPTF Analyzer</h1>
+            <ThemeToggle />
+          </div>
+          <nav className="mt-8">
+            <ul className="space-y-2">
+              {menuItems.map((item) => (
+                <li key={item.name}>
+                  <a 
+                    href={item.href} 
+                    className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent text-foreground"
+                  >
+                    <item.icon size={18} />
+                    <span>{item.name}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
-      <div className="p-4 border-t flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">v1.0.0</span>
-        <ThemeToggle />
-      </div>
-    </div>
-  )
+    </>
+  );
 }

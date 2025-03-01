@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider, ThemeProvider } from "@/components/providers";
 import { Sidebar } from "@/components/sidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "BPTF Analyzer",
@@ -26,9 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -37,10 +27,18 @@ export default function RootLayout({
         >
           <QueryProvider>
             <div className="flex h-screen">
-              <div className="w-64 shrink-0">
+              {/* Sidebar - hidden on mobile, fixed width on desktop */}
+              <div className="hidden md:block w-64 shrink-0">
                 <Sidebar />
               </div>
-              <div className="flex-1 overflow-auto">
+              
+              {/* Mobile sidebar - rendered separately to handle slide-in behavior */}
+              <div className="md:hidden">
+                <Sidebar />
+              </div>
+              
+              {/* Main content with adjusted padding for mobile */}
+              <div className="flex-1 overflow-auto w-full md:w-[calc(100%-16rem)]">
                 {children}
               </div>
             </div>
