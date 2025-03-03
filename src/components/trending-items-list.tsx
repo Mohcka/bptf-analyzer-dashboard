@@ -1,6 +1,6 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { getTopTrendingItems } from "@/db/queries/trending";
+import { getTrendingItems } from "@/actions/get-trending-items";
 import {
   Card,
   CardContent,
@@ -30,10 +30,10 @@ import {
 } from "recharts";
 
 export function TrendingItemsList() {
-  // Fetch trending items using useQuery
+  // Fetch trending items using useQuery with the server action
   const { data, isSuccess, isLoading, error } = useQuery({
-    queryKey: ['top-trending-items'],
-    queryFn: () => getTopTrendingItems(),
+    queryKey: ['trending-items'],
+    queryFn: () => getTrendingItems(10, 24),
     placeholderData: (prevData) => prevData,
   });
 
@@ -50,28 +50,25 @@ export function TrendingItemsList() {
   if (error) return <div>Error loading items</div>;
 
   if (isSuccess && data) {
-    const { items: trendingItems, hourlyData } = data;
-    
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-2 md:px-0">
-        {trendingItems.map((item, i) => {
+        {data.map((item, i) => {
           // Prepare chart data if available
-          const hasChartData = hourlyData && hourlyData[item.itemName] && hourlyData[item.itemName].length > 0;
+          const hasChartData = item.hourlyData && item.hourlyData.length > 0;
           
+          // Format the hourly data for the chart
           const chartData = hasChartData 
-            ? hourlyData[item.itemName]
-                .slice(1, -1) // Remove both the first and most recent hour
-                .map((count, index) => ({ 
-                  hour: index + 1, // Add 1 to index since we're skipping first hour
-                  count: count 
-                }))
+            ? item.hourlyData.map((dataPoint, index) => ({ 
+                hour: index + 1,
+                count: dataPoint.updates
+              }))
             : [];
 
           // Configure chart
           const chartConfig = {
             count: {
               label: "Listings",
-              color: item.itemColor || "#3B82F6",
+              color: item.itemDetails.color || "#3B82F6",
             }
           };
           
@@ -80,25 +77,25 @@ export function TrendingItemsList() {
               <CardHeader className="flex flex-col items-center justify-center pb-2 px-3 md:px-4">
                 <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 flex items-center justify-center">
                   <img
-                    src={item.itemImageUrl}
-                    alt={item.itemName}
+                    src={item.itemDetails.image}
+                    alt={item.itemDetails.name}
                     className="max-h-full max-w-full object-contain"
                   />
                 </div>
 
                 <div className="text-center mt-2">
-                  <h3 className="text-base sm:text-lg font-semibold">{item.itemName}</h3>
-                  {item.itemQualityName && (
+                  <h3 className="text-base sm:text-lg font-semibold">{item.itemDetails.name}</h3>
+                  {item.itemDetails.quality && (
                     <Badge 
                       className="mt-1 font-medium"
                       style={{ 
-                        backgroundColor: `${item.itemColor}20` || '#9da0a120',
-                        color: item.itemColor || '#9da0a1',
-                        borderColor: `${item.itemColor}40` || '#9da0a140'
+                        backgroundColor: `${item.itemDetails.color}20` || '#9da0a120',
+                        color: item.itemDetails.color || '#9da0a1',
+                        borderColor: `${item.itemDetails.color}40` || '#9da0a140'
                       }}
                       variant="outline"
                     >
-                      {item.itemQualityName}
+                      {item.itemDetails.quality}
                     </Badge>
                   )}
                 </div>
@@ -106,31 +103,48 @@ export function TrendingItemsList() {
 
               <CardContent className="flex flex-col gap-1 text-xs sm:text-sm w-full pt-2 px-3 md:px-4 border-t">
                 <div className="flex justify-between w-full">
-                  <span className="text-zinc-600 dark:text-zinc-400">Creations/Updates:</span>
-                  <span className="font-medium">{item.updateCount} listings</span>
+                  <span className="text-zinc-600 dark:text-zinc-400">Total Activity:</span>
+                  <span className="font-medium">{item.itemDetails.totalActivity} listings</span>
                 </div>
-                <div className="flex justify-between w-full">
-                  <span className="text-zinc-600 dark:text-zinc-400">Deletions:</span>
-                  <span className="font-medium">{item.deleteCount} listings</span>
-                </div>
-                <div className="flex justify-between w-full">
-                  <span className="text-zinc-600 dark:text-zinc-400">Total difference:</span>
-                  <span className="font-medium">{item.updateCount - item.deleteCount} listings</span>
-                </div>
-                <div className="flex justify-between w-full mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
-                  <span className="text-zinc-600 dark:text-zinc-400">Avg. Price:</span>
-                  <span className="font-medium">
-                    {item.avgKeysAmount || item.avgMetalAmount ?
-                      `${item.avgKeysAmount ? `${item.avgKeysAmount.toFixed(1)} keys` : ''}${item.avgKeysAmount && item.avgMetalAmount ? ', ' : ''}${item.avgMetalAmount ? `${item.avgMetalAmount.toFixed(2)} ref` : ''}`
-                      : 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between w-full">
-                  <span className="text-zinc-600 dark:text-zinc-400">Avg. USD:</span>
-                  <span className="font-medium">
-                    {item.avgPriceUsd ? `$${item.avgPriceUsd.toFixed(2)}` : 'N/A'}
-                  </span>
-                </div>
+                
+                {hasChartData && item.hourlyData.length > 0 && (
+                  <>
+                    <div className="flex justify-between w-full">
+                      <span className="text-zinc-600 dark:text-zinc-400">Latest Updates:</span>
+                      <span className="font-medium">
+                        {item.hourlyData[item.hourlyData.length - 1]?.updates || 'N/A'} listings
+                      </span>
+                    </div>
+                    <div className="flex justify-between w-full mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
+                      <span className="text-zinc-600 dark:text-zinc-400">Avg. Price:</span>
+                      <span className="font-medium">
+                        {(() => {
+                          const latest = item.hourlyData[item.hourlyData.length - 1];
+                          if (!latest) return 'N/A';
+                          
+                          const keysAmount = latest.avgKeys;
+                          const metalAmount = latest.avgMetal;
+                          
+                          if (!keysAmount && !metalAmount) return 'N/A';
+                          
+                          return `${!isNaN(Number(keysAmount)) && keysAmount ? `${Number(keysAmount).toFixed(1)} keys` : ''}${
+                            !isNaN(Number(keysAmount)) && keysAmount && !isNaN(Number(metalAmount)) && metalAmount ? ', ' : ''}${
+                            !isNaN(Number(metalAmount)) && metalAmount ? `${Number(metalAmount).toFixed(2)} ref` : ''}`;
+                        })()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between w-full">
+                      <span className="text-zinc-600 dark:text-zinc-400">Avg. USD:</span>
+                      <span className="font-medium">
+                        {(() => {
+                          const latest = item.hourlyData[item.hourlyData.length - 1];
+                          if (!latest || !latest.avgUsdPrice) return 'N/A';
+                          return `$${Number(latest.avgUsdPrice).toFixed(2)}`;
+                        })()}
+                      </span>
+                    </div>
+                  </>
+                )}
               </CardContent>
               
               {hasChartData && (
@@ -164,7 +178,7 @@ export function TrendingItemsList() {
                           <Line
                             type="monotone"
                             dataKey="count"
-                            stroke={item.itemColor || "#3B82F6"}
+                            stroke={item.itemDetails.color || "#3B82F6"}
                             strokeWidth={2}
                             dot={false}
                           />
@@ -196,8 +210,8 @@ export function TrendingItemsList() {
                           <Area
                             type="monotone"
                             dataKey="count"
-                            stroke={item.itemColor || "#3B82F6"}
-                            fill={item.itemColor || "#3B82F6"}
+                            stroke={item.itemDetails.color || "#3B82F6"}
+                            fill={item.itemDetails.color || "#3B82F6"}
                             fillOpacity={0.2}
                           />
                         </AreaChart>
