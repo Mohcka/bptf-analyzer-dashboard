@@ -33,7 +33,7 @@ export function TrendingItemsList() {
   // Fetch trending items using useQuery
   const { data, isSuccess, isLoading, isFetching, error } = useQuery({
     queryKey: ['top-trending-items'],
-    queryFn: () => getTrendingItems(9, 6), // Get top 9 items with 6 hours of data
+    queryFn: () => getTrendingItems(9, 7), // Get top 9 items with 6 hours of data
     placeholderData: (prevData) => prevData,
   });
 
