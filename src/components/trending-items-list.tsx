@@ -37,7 +37,7 @@ export function TrendingItemsList() {
     placeholderData: (prevData) => prevData,
   });
 
-  if (isFetching) {
+  if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-2 md:px-0">
         {[...Array(9)].map((_, i) => (
@@ -52,7 +52,7 @@ export function TrendingItemsList() {
   if (isSuccess && data) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-2 md:px-0">
-        {!isFetching && isLoading && (
+        {isFetching && (
           // indicate that we're retreiving new data
           <div className="col-span-3 flex items-center justify-center w-full h-24">
             <span className="text-zinc-600 dark:text-zinc-400 animate-pulse">Fetching new data...</span>
@@ -77,7 +77,7 @@ export function TrendingItemsList() {
                 keys: point.avgKeys || 0,
                 metal: point.avgMetal || 0,
               };
-            }).slice(0,-1)
+            }).slice(0, -1)
             : [];
 
           // Configure chart
@@ -129,15 +129,21 @@ export function TrendingItemsList() {
                 <div className="flex justify-between w-full mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
                   <span className="text-zinc-600 dark:text-zinc-400">Avg. Price:</span>
                   <span className="font-medium">
-                    {latestData && (latestData.avgKeys || latestData.avgMetal) ?
-                      `${latestData.avgKeys ? `${Number(latestData.avgKeys).toFixed(1)} keys` : ''}${latestData.avgKeys && latestData.avgMetal ? ', ' : ''}${latestData.avgMetal ? `${Number(latestData.avgMetal).toFixed(2)} ref` : ''}`
+                    {latestData && (
+                      (latestData.avgKeys && latestData.avgKeys !== "NaN") ||
+                      (latestData.avgMetal && latestData.avgMetal !== "NaN")
+                    ) ?
+                      `${latestData.avgKeys && latestData.avgKeys !== "NaN" ? `${Number(latestData.avgKeys).toFixed(1)} keys` : ''}
+                        ${latestData.avgKeys && latestData.avgKeys !== "NaN" && latestData.avgMetal && latestData.avgMetal !== "NaN" ? ', ' : ''}
+                        ${latestData.avgMetal && latestData.avgMetal !== "NaN" ? `${Number(latestData.avgMetal).toFixed(2)} ref` : ''}`
                       : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between w-full">
                   <span className="text-zinc-600 dark:text-zinc-400">Avg. USD:</span>
                   <span className="font-medium">
-                    {latestData && latestData.avgUsdPrice ? `$${Number(latestData.avgUsdPrice).toFixed(2)}` : 'N/A'}
+                    {latestData && latestData.avgUsdPrice && latestData.avgUsdPrice !== "NaN" ?
+                      `$${Number(latestData.avgUsdPrice).toFixed(2)}` : 'N/A'}
                   </span>
                 </div>
               </CardContent>
