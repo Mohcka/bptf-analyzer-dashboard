@@ -237,14 +237,23 @@ export function TrendingItemsList() {
   return null;
 }
 
-// Add this custom tooltip component near the top of your file
 const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
+    // Get the color from the payload
+    const color = payload[0].stroke || payload[0].payload.fill;
+    
     return (
       <div className="bg-background border border-border p-2 rounded-lg shadow-md text-foreground text-sm">
         <p className="font-medium">{payload[0].payload.date}</p>
         <div className="flex items-center justify-between gap-2 mt-1">
-          <span>Listings:</span>
+          <span className="flex items-center gap-1.5">
+            {/* Color indicator dot */}
+            <div 
+              className="h-2 w-2 rounded-[2px]" 
+              style={{ backgroundColor: color }}
+            />
+            Listings:
+          </span>
           <span className="font-medium">{payload[0].value}</span>
         </div>
       </div>
