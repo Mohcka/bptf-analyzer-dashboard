@@ -55,8 +55,8 @@ export function TrendingItemsList() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full px-2 md:px-0">
         {isFetching && (
-          // indicate that we're retreiving new data
-          <div className="col-span-3 flex items-center justify-center w-full h-24">
+          // indicate that we're retrieving new data
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3 flex items-center justify-center w-full h-24">
             <span className="text-zinc-600 dark:text-zinc-400 animate-pulse">Fetching new data...</span>
           </div>
         )}
