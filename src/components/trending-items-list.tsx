@@ -1,5 +1,6 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns"
 import {
   Card,
   CardContent,
@@ -25,7 +26,8 @@ import {
   Area,
   XAxis,
   YAxis,
-  CartesianGrid
+  CartesianGrid,
+  TooltipProps
 } from "recharts";
 import { getTrendingItems } from "@/actions/get-trending-items";
 
@@ -65,13 +67,10 @@ export function TrendingItemsList() {
           // Format data for the charts
           const chartData = hasChartData
             ? hourlyData.map(point => {
-              const hour = new Date(point.timestamp).getHours();
-              const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
-              const amPm = hour < 12 ? 'AM' : 'PM';
-
+              const date = new Date(point.timestamp);
               return {
-                hour: `${formattedHour}${amPm}`,
-                rawHour: hour, // Keep original hour for sorting if needed
+                hour: format(date, "ha"),
+                date: format(date, "MMM do, yyyy h:mm a"),
                 count: point.updates,
                 price: point.avgUsdPrice || 0,
                 keys: point.avgKeys || 0,
@@ -85,6 +84,7 @@ export function TrendingItemsList() {
             count: {
               label: "Listings",
               color: itemDetails.color || "#3B82F6",
+              thing: 'thing'
             }
           };
 
@@ -175,7 +175,7 @@ export function TrendingItemsList() {
                             tickFormatter={(value) => `${value}`}
                             tick={{ fontSize: 10 }}
                           />
-                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <ChartTooltip content={<CustomTooltip />} />
                           <Line
                             type="monotone"
                             dataKey="count"
@@ -236,3 +236,19 @@ export function TrendingItemsList() {
 
   return null;
 }
+
+// Add this custom tooltip component near the top of your file
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-background border border-border p-2 rounded-lg shadow-md text-foreground text-sm">
+        <p className="font-medium">{payload[0].payload.date}</p>
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <span>Listings:</span>
+          <span className="font-medium">{payload[0].value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
