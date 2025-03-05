@@ -64,13 +64,24 @@ export function TrendingItemsList() {
           // Check if we have chart data
           const hasChartData = hourlyData && hourlyData.length > 0;
 
+          // Helper function to determine time format preference
+          const usesTwelveHourFormat = () => {
+            // Get user locale (or use browser's)
+            const locale = navigator.language || "en-US";
+
+            // Locales that typically use 12-hour format
+            const twelveHourLocales = ["en-US", "en-GB", "en-CA", "en-AU"];
+
+            return twelveHourLocales.includes(locale);
+          };
+
           // Format data for the charts
           const chartData = hasChartData
             ? hourlyData.map(point => {
               const date = new Date(point.timestamp);
               return {
-                hour: format(date, "ha"),
-                date: format(date, "MMM do, yyyy h:mm a"),
+                hour: usesTwelveHourFormat() ? format(date, "ha") : format(date, "H"),
+                date: format(date, `MMM do, yyyy ${usesTwelveHourFormat() ? 'h:mm a' : 'HH:mm'}`),
                 count: point.updates,
                 price: point.avgUsdPrice || 0,
                 keys: point.avgKeys || 0,
@@ -83,8 +94,7 @@ export function TrendingItemsList() {
           const chartConfig = {
             count: {
               label: "Listings",
-              color: itemDetails.color || "#3B82F6",
-              thing: 'thing'
+              color: itemDetails.color || "#3B82F6"
             }
           };
 
