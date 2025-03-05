@@ -238,7 +238,7 @@ export function TrendingItemsList() {
 }
 
 // Add this custom tooltip component near the top of your file
-const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-background border border-border p-2 rounded-lg shadow-md text-foreground text-sm">
