@@ -80,7 +80,7 @@ export function TrendingItemsList() {
             ? hourlyData.map(point => {
               const date = new Date(point.timestamp);
               return {
-                hour: usesTwelveHourFormat() ? format(date, "ha") : format(date, "H"),
+                hour: usesTwelveHourFormat() ? format(date, "ha") : format(date, "HH:mm"),
                 date: format(date, `MMM do, yyyy ${usesTwelveHourFormat() ? 'h:mm a' : 'HH:mm'}`),
                 count: point.updates,
                 price: point.avgUsdPrice || 0,
